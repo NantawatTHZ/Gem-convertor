@@ -202,7 +202,7 @@
                 </label>
             </div>
             <div class="flex justify-center mt-6">
-                <button id="resetCalculateBtn" class="btn btn-secondary">🔄 ล้างค่าและคำนวณใหม่</button>
+                <button id="resetCalculateBtn" class="btn btn-secondary">🔄 ล้างค่า</button>
             </div>
             <div id="result" class="result-box mt-6">
                 <h3>🔄 ผลลัพธ์จากหินที่คุณมี:</h3>
@@ -211,7 +211,7 @@
         </div>
 
         <div class="mb-6">
-            <h2 class="text-xl mb-4">💰 คำนวณรายรับจากการขายหิน</h2>
+            <h2 class="text-xl mb-4">💰 คำนวณรายได้จากการขายหิน</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
                 <label>
                     <span class="gem-emoji">⚪</span>
@@ -243,7 +243,7 @@
                 </label>
             </div>
             <div class="flex justify-center mt-6">
-                <button id="clearSellBtn" class="btn btn-secondary">🧹 ล้างค่าขาย</button>
+                <button id="clearSellBtn" class="btn btn-secondary">🧹 ล้างค่า</button>
             </div>
             <div id="sell_result" class="result-box mt-6">
                 <h3>💸 คุณจะได้รับเดนทั้งหมด: <strong>0 หน่วย</strong></h3>
@@ -251,36 +251,38 @@
         </div>
 
         <div class="mb-6">
-            <h2 class="text-xl mb-4">📊 ราคาขายและต้นทุนอัปเกรด</h2>
+            <h2 class="text-xl mb-4">📊 ราคาขายหินและราคาอัปเกรด</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>ระดับกรอบ</th>
+                        <th>ระดับ (กรอบ)</th>
                         <th>ราคาขาย (เดน)</th>
                         <th>ใช้เดนในการอัปเกรด</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>⚪ หินกรอบเทา</td><td>150</td><td>1,500</td></tr>
-                    <tr><td>🟢 หินกรอบเขียว</td><td>600</td><td>3,000</td></tr>
-                    <tr><td>🔵 หินกรอบฟ้า</td><td>1,500</td><td>9,000</td></tr>
-                    <tr><td>🟣 หินกรอบม่วง</td><td>3,000</td><td>15,000</td></tr>
-                    <tr><td>🔴 หินกรอบแดง</td><td>9,000</td><td>30,000</td></tr>
-                    <tr><td>🟡 หินกรอบทอง</td><td>15,000</td><td>50,000</td></tr>
-                    <tr><td>💖 หินกรอบชมพู</td><td>25,000</td><td>-</td></tr>
+                    <tr><td>⚪ หินกรอบเทา</td><td>150</td><td>ไม่มี</td></tr>
+                    <tr><td>🟢 หินกรอบเขียว</td><td>600</td><td>1,500</td></tr>
+                    <tr><td>🔵 หินกรอบฟ้า</td><td>1,500</td><td>3,000</td></tr>
+                    <tr><td>🟣 หินกรอบม่วง</td><td>3,000</td><td>9,000</td></tr>
+                    <tr><td>🔴 หินกรอบแดง</td><td>9,000</td><td>15,000</td></tr>
+                    <tr><td>🟡 หินกรอบทอง</td><td>15,000</td><td>30,000</td></tr>
+                    <tr><td>💖 หินกรอบชมพู</td><td>25,000</td><td>50,000</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Function to clear input fields and localStorage items based on IDs
-        function clearInputs(ids) {
+        // Function to clear input fields and optionally remove from localStorage
+        function clearInputs(ids, clearLocalStorage = true) {
             ids.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
                     element.value = 0; // Set value to 0
-                    localStorage.removeItem(id); // Remove from localStorage
+                    if (clearLocalStorage) {
+                        localStorage.removeItem(id); // Remove from localStorage
+                    }
                     element.classList.remove('invalid'); // Remove invalid class
                 }
             });
@@ -293,10 +295,7 @@
             const purple = parseInt(document.getElementById('purple').value) || 0;
             const red = parseInt(document.getElementById('red').value) || 0;
 
-            // Save current input values to localStorage for persistence
-            localStorage.setItem('blue', blue);
-            localStorage.setItem('purple', purple);
-            localStorage.setItem('red', red);
+            // *** Removed localStorage.setItem for calculate inputs ***
 
             // Calculate how many purple gems can be made from blue gems
             const madePurple = Math.floor(blue / 5);
@@ -342,8 +341,7 @@
                 const element = document.getElementById(`sell_${key}`);
                 const qty = parseInt(element ? element.value : 0) || 0; // Get quantity, default to 0
                 totalDenEarned += qty * prices[key]; // Add to total
-                // Save sell input values to localStorage
-                localStorage.setItem(`sell_${key}`, qty);
+                // *** Removed localStorage.setItem for sell inputs ***
             }
             // Update the sell result display
             document.getElementById('sell_result').innerHTML = `
@@ -358,18 +356,13 @@
 
             // Add event listeners for focus and blur events on all number inputs
             numberInputs.forEach(input => {
-                // Restore saved values from localStorage
-                const storedValue = localStorage.getItem(input.id);
-                if (storedValue !== null) {
-                    input.value = storedValue;
-                }
+                // *** Removed localStorage.getItem for restoring values ***
 
-                // Event listener for when an input field gains focus
+                // Event listener for when an input field gains focus (Clear on Focus)
                 input.addEventListener('focus', function() {
-                    // If the current value is '0', clear it to an empty string
-                    if (this.value === '0') {
-                        this.value = '';
-                    }
+                    // Clear the input value when focused
+                    this.value = '';
+                    this.classList.remove('invalid'); // Also remove invalid class if present
                 });
 
                 // Event listener for when an input field loses focus
@@ -405,17 +398,19 @@
 
             // Attach event listener for the reset calculate button
             document.getElementById('resetCalculateBtn').addEventListener('click', () => {
-                clearInputs(['blue', 'purple', 'red']);
+                // Pass false to clearLocalStorage to not remove items (though already removed in this version)
+                clearInputs(['blue', 'purple', 'red'], false); 
                 calculate(); // Recalculate after clearing
             });
 
             // Attach event listener for the clear sell button
             document.getElementById('clearSellBtn').addEventListener('click', () => {
-                clearInputs(['sell_gray', 'sell_green', 'sell_blue', 'sell_purple', 'sell_red', 'sell_gold', 'sell_pink']);
+                // Pass false to clearLocalStorage to not remove items (though already removed in this version)
+                clearInputs(['sell_gray', 'sell_green', 'sell_blue', 'sell_purple', 'sell_red', 'sell_gold', 'sell_pink'], false); 
                 sellGems(); // Recalculate after clearing
             });
 
-            // Perform initial calculations when the page loads
+            // Perform initial calculations when the page loads (values will be 0 as localStorage is disabled)
             calculate();
             sellGems();
         });
