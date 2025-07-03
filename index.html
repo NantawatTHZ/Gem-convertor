@@ -52,9 +52,8 @@
             height: 32px;
         }
 
-        input[type="number"] {
+        input[type="number"], select {
             padding: 0.6rem;
-            width: 100px; /* Slightly wider for better touch target */
             background-color: #4a5568; /* Darker input background */
             border: 1px solid #6a7c8e; /* Subtle border */
             border-radius: 0.5rem; /* Rounded input fields */
@@ -63,7 +62,13 @@
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
-        input[type="number"]:focus {
+        input[type="number"] {
+             width: 100px; /* Slightly wider for better touch target */
+        }
+        select {
+            width: 100%;
+        }
+        input[type="number"]:focus, select:focus {
             border-color: #4fd1c5; /* Highlight on focus */
             box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.5); /* Focus ring */
             outline: none;
@@ -135,20 +140,13 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .result-box ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        .result-box li {
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }
         .result-box .result-text {
             font-size: 1rem;
             margin-bottom: 0.5rem;
         }
         .result-box strong {
             font-weight: bold;
+            color: #4fd1c5;
         }
 
         table {
@@ -216,12 +214,68 @@
 <body>
     <div class="container-card">
         <nav class="nav-buttons-container">
-            <button id="navRequired" class="nav-btn active">คำนวณหิน</button>
-            <button id="navSell" class="nav-btn">คำนวณเดนที่ได้จากการขายหิน</button>
+            <button id="navConversion" class="nav-btn active">🔁 คำนวณการแปลงหิน</button>
+            <button id="navRequired" class="nav-btn">✨ คำนวณหินที่ต้องใช้</button>
+            <button id="navSell" class="nav-btn">💰 คำนวณเดนจากการขาย</button>
         </nav>
 
-        <div id="requiredSection" class="mb-6">
-            <h2 class="text-xl mb-4">✨ คำนวณหิน</h2>
+        <div id="conversionSection" class="mb-6">
+            <h2 class="text-xl mb-4">🔁 คำนวณการแปลงหิน</h2>
+            <div class="mb-6">
+                <h3 class="text-lg mb-2 text-teal-300">1. กรอกจำนวนหินที่คุณมี:</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                    <label>
+                        <span class="gem-emoji">⚪</span>
+                        กรอบเทา: <input type="number" id="conversion_have_gray" value="0" min="0" class="conversion-input">
+                    </label>
+                    <label>
+                        <span class="gem-emoji">🟢</span>
+                        กรอบเขียว: <input type="number" id="conversion_have_green" value="0" min="0" class="conversion-input">
+                    </label>
+                    <label>
+                        <span class="gem-emoji">🔵</span>
+                        กรอบฟ้า: <input type="number" id="conversion_have_blue" value="0" min="0" class="conversion-input">
+                    </label>
+                    <label>
+                        <span class="gem-emoji">🟣</span>
+                        กรอบม่วง: <input type="number" id="conversion_have_purple" value="0" min="0" class="conversion-input">
+                    </label>
+                    <label>
+                        <span class="gem-emoji">🔴</span>
+                        กรอบแดง: <input type="number" id="conversion_have_red" value="0" min="0" class="conversion-input">
+                    </label>
+                    <label>
+                        <span class="gem-emoji">🟡</span>
+                        กรอบทอง: <input type="number" id="conversion_have_gold" value="0" min="0" class="conversion-input">
+                    </label>
+                    <label>
+                        <span class="gem-emoji">💖</span>
+                        กรอบชมพู: <input type="number" id="conversion_have_pink" value="0" min="0" class="conversion-input">
+                    </label>
+                </div>
+            </div>
+             <div class="mb-6">
+                <h3 class="text-lg mb-2 text-teal-300">2. เลือกหินที่ต้องการแปลงไปถึง:</h3>
+                <select id="conversion_target">
+                    <option value="">-- โปรดเลือก --</option>
+                    <option value="green">🟢 กรอบเขียว</option>
+                    <option value="blue">🔵 กรอบฟ้า</option>
+                    <option value="purple">🟣 กรอบม่วง</option>
+                    <option value="red">🔴 กรอบแดง</option>
+                    <option value="gold">🟡 กรอบทอง</option>
+                    <option value="pink">💖 กรอบชมพู</option>
+                </select>
+            </div>
+            <div class="flex justify-center mt-6">
+                <button id="resetConversionBtn" class="btn btn-secondary">🔄 ล้างค่า</button>
+            </div>
+            <div id="conversion_result" class="result-box mt-6">
+                <p>กรุณากรอกจำนวนหินและเลือกหินเป้าหมาย</p>
+            </div>
+        </div>
+
+        <div id="requiredSection" class="mb-6 hidden">
+            <h2 class="text-xl mb-4">✨ คำนวณหินที่ต้องใช้</h2>
             <div class="flex flex-wrap justify-center gap-4 mb-4 input-group">
                 <label>
                     <span class="gem-emoji">🟢</span>
@@ -258,7 +312,6 @@
                 <button id="resetRequiredBtn" class="btn btn-secondary">🔄 ล้างค่า</button>
             </div>
             <div id="required_result" class="result-box mt-6">
-                <h3>📋 หินที่ต้องใช้:</h3>
                 <p>กรุณาใส่จำนวนหินที่ต้องการคำนวณ</p>
             </div>
         </div>
@@ -327,234 +380,198 @@
     </div>
 
     <script>
-        // Define gem conversion rates and upgrade costs
-        const conversionRate = 5; // 5 lower-tier gems make 1 higher-tier gem
+        // --- CONFIGURATION ---
+        const conversionRate = 5;
         const upgradeCosts = {
-            'green': 1500,  // To upgrade from Gray to Green
-            'blue': 3000,   // To upgrade from Green to Blue
-            'purple': 9000, // To upgrade from Blue to Purple
-            'red': 15000,   // To upgrade from Purple to Red
-            'gold': 30000,  // To upgrade from Red to Gold
-            'pink': 50000   // To upgrade from Gold to Pink
+            'green': 1500, 'blue': 3000, 'purple': 9000,
+            'red': 15000, 'gold': 30000, 'pink': 50000
         };
+        const sellPrices = {
+            'gray': 150, 'green': 600, 'blue': 1500, 'purple': 3000,
+            'red': 9000, 'gold': 15000, 'pink': 25000
+        };
+        const gemTiers = ['gray', 'green', 'blue', 'purple', 'red', 'gold', 'pink'];
+        const gemNames = {
+             'gray': '⚪ กรอบเทา', 'green': '🟢 กรอบเขียว', 'blue': '🔵 กรอบฟ้า', 'purple': '🟣 กรอบม่วง',
+            'red': '🔴 กรอบแดง', 'gold': '🟡 กรอบทอง', 'pink': '💖 กรอบชมพู'
+        };
+        const allSections = ['conversionSection', 'requiredSection', 'sellSection'];
 
-        // Function to clear input fields
+        // --- UTILITY FUNCTIONS ---
         function clearInputs(ids) {
             ids.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
-                    element.value = 0;
+                    element.value = element.tagName === 'SELECT' ? '' : 0;
                     element.classList.remove('invalid');
                 }
             });
         }
 
-        // Function to calculate total 'den' from selling gems
-        function sellGems() {
-            const prices = {
-                gray: 150, green: 600, blue: 1500, purple: 3000,
-                red: 9000, gold: 15000, pink: 25000
-            };
-            let totalDenEarned = 0;
-
-            for (const key in prices) {
-                const element = document.getElementById(`sell_${key}`);
-                const qty = parseInt(element ? element.value : 0) || 0;
-                totalDenEarned += qty * prices[key];
-            }
-            document.getElementById('sell_result').innerHTML = `
-                <h3 class="text-lg text-teal-300 font-semibold mb-3">💸 คุณจะได้รับเดนทั้งหมด: <strong>${new Intl.NumberFormat().format(totalDenEarned)} เดน</strong></h3>
-            `;
-        }
-
-        // Function to calculate required gems
-        function calculateRequiredGems() {
-            const desiredGreen = parseInt(document.getElementById('required_green').value) || 0;
-            const desiredBlue = parseInt(document.getElementById('required_blue').value) || 0;
-            const desiredPurple = parseInt(document.getElementById('required_purple').value) || 0;
-            const desiredRed = parseInt(document.getElementById('required_red').value) || 0;
-            const desiredGold = parseInt(document.getElementById('required_gold').value) || 0;
-            const desiredPink = parseInt(document.getElementById('required_pink').value) || 0;
-
-            // Check if all desired values are zero
-            if ([desiredGreen, desiredBlue, desiredPurple, desiredRed, desiredGold, desiredPink].every(qty => qty === 0)) {
-                document.getElementById('required_result').innerHTML = `
-                    <h3 class="text-lg text-teal-300 font-semibold mb-3">📋 หินที่ต้องใช้:</h3>
-                    <p>กรุณาใส่จำนวนหินที่ต้องการคำนวณ</p>
-                `;
-                return;
-            }
-
-            // This map stores the *total number of gems that need to be produced at this tier*
-            // This is crucial for calculating the Den cost for each tier.
-            const totalGemsToProduce = {
-                'pink': desiredPink,
-                'gold': desiredGold,
-                'red': desiredRed,
-                'purple': desiredPurple,
-                'blue': desiredBlue,
-                'green': desiredGreen,
-                'gray': 0 // Gray is only a material, never a "desired" output
-            };
-
-            // Calculate total materials needed, working backwards from highest desired tier
-            // and adjust the 'totalGemsToProduce' for lower tiers.
-            if (totalGemsToProduce['pink'] > 0) {
-                totalGemsToProduce['gold'] += totalGemsToProduce['pink'] * conversionRate;
-            }
-            if (totalGemsToProduce['gold'] > 0) {
-                totalGemsToProduce['red'] += totalGemsToProduce['gold'] * conversionRate;
-            }
-            if (totalGemsToProduce['red'] > 0) {
-                totalGemsToProduce['purple'] += totalGemsToProduce['red'] * conversionRate;
-            }
-            if (totalGemsToProduce['purple'] > 0) {
-                totalGemsToProduce['blue'] += totalGemsToProduce['purple'] * conversionRate;
-            }
-            if (totalGemsToProduce['blue'] > 0) {
-                totalGemsToProduce['green'] += totalGemsToProduce['blue'] * conversionRate;
-            }
-            if (totalGemsToProduce['green'] > 0) {
-                totalGemsToProduce['gray'] += totalGemsToProduce['green'] * conversionRate;
-            }
-
-            // Calculate Den for each stage based on the *number of gems that will be upgraded*
-            let denUsedForUpgrade = {
-                'green': 0, // Den for Gray to Green upgrades
-                'blue': 0,  // Den for Green to Blue upgrades
-                'purple': 0, // Den for Blue to Purple upgrades
-                'red': 0,    // Den for Purple to Red upgrades
-                'gold': 0,   // Den for Red to Gold upgrades
-                'pink': 0    // Den for Gold to Pink upgrades
-            };
-
-            // Calculate Den needed for the *upgrades*
-            // This should calculate the cost for producing all gems at each level,
-            // regardless if they are directly desired or used as material.
-
-            // The 'totalGemsToProduce[level]' now correctly includes both directly desired gems
-            // AND the materials needed for higher-tier gems.
-            // We multiply the *total amount produced at that level* by its upgrade cost.
-            
-            // Den for producing Pink gems
-            denUsedForUpgrade['pink'] = totalGemsToProduce['pink'] * upgradeCosts['pink'];
-
-            // Den for producing Gold gems (includes those for Pink)
-            denUsedForUpgrade['gold'] = totalGemsToProduce['gold'] * upgradeCosts['gold'];
-
-            // Den for producing Red gems (includes those for Gold)
-            denUsedForUpgrade['red'] = totalGemsToProduce['red'] * upgradeCosts['red'];
-            
-            // Den for producing Purple gems (includes those for Red)
-            denUsedForUpgrade['purple'] = totalGemsToProduce['purple'] * upgradeCosts['purple'];
-
-            // Den for producing Blue gems (includes those for Purple)
-            denUsedForUpgrade['blue'] = totalGemsToProduce['blue'] * upgradeCosts['blue'];
-
-            // Den for producing Green gems (includes those for Blue)
-            denUsedForUpgrade['green'] = totalGemsToProduce['green'] * upgradeCosts['green'];
-            
-            // --- Generate Result HTML ---
-            let resultHtml = `
-                <h3 class="text-lg text-teal-300 font-semibold mb-3">📋 หินที่ต้องใช้และเดนในการอัปเกรด:</h3>
-            `;
-
-            let hasOutput = false;
-
-            // Display results only for gems that are actually needed as *materials*
-            // and their corresponding upgrade den.
-            // The logic now correctly subtracts the 'desired' amount to show only materials.
-            if (totalGemsToProduce['gray'] > 0) {
-                resultHtml += `<p class="result-text">หินกรอบเทา: <strong>${new Intl.NumberFormat().format(totalGemsToProduce['gray'])}</strong> เม็ด และใช้เดน: <strong>${new Intl.NumberFormat().format(denUsedForUpgrade['green'])}</strong></p>`;
-                hasOutput = true;
-            }
-            if (totalGemsToProduce['green'] > desiredGreen) { 
-                resultHtml += `<p class="result-text">หินกรอบเขียว: <strong>${new Intl.NumberFormat().format(totalGemsToProduce['green'] - desiredGreen)}</strong> เม็ด และใช้เดน: <strong>${new Intl.NumberFormat().format(denUsedForUpgrade['blue'])}</strong></p>`;
-                hasOutput = true;
-            }
-            if (totalGemsToProduce['blue'] > desiredBlue) {
-                resultHtml += `<p class="result-text">หินกรอบฟ้า: <strong>${new Intl.NumberFormat().format(totalGemsToProduce['blue'] - desiredBlue)}</strong> เม็ด และใช้เดน: <strong>${new Intl.NumberFormat().format(denUsedForUpgrade['purple'])}</strong></p>`;
-                hasOutput = true;
-            }
-            if (totalGemsToProduce['purple'] > desiredPurple) {
-                resultHtml += `<p class="result-text">หินกรอบม่วง: <strong>${new Intl.NumberFormat().format(totalGemsToProduce['purple'] - desiredPurple)}</strong> เม็ด และใช้เดน: <strong>${new Intl.NumberFormat().format(denUsedForUpgrade['red'])}</strong></p>`;
-                hasOutput = true;
-            }
-            if (totalGemsToProduce['red'] > desiredRed) {
-                resultHtml += `<p class="result-text">หินกรอบแดง: <strong>${new Intl.NumberFormat().format(totalGemsToProduce['red'] - desiredRed)}</strong> เม็ด และใช้เดน: <strong>${new Intl.NumberFormat().format(denUsedForUpgrade['gold'])}</strong></p>`;
-                hasOutput = true;
-            }
-            if (totalGemsToProduce['gold'] > desiredGold) {
-                resultHtml += `<p class="result-text">หินกรอบทอง: <strong>${new Intl.NumberFormat().format(totalGemsToProduce['gold'] - desiredGold)}</strong> เม็ด และใช้เดน: <strong>${new Intl.NumberFormat().format(denUsedForUpgrade['pink'])}</strong></p>`;
-                hasOutput = true;
-            }
-
-            if (!hasOutput) {
-                resultHtml = `
-                    <h3 class="text-lg text-teal-300 font-semibold mb-3">📋 หินที่ต้องใช้:</h3>
-                    <p>กรุณาใส่จำนวนหินที่ต้องการคำนวณ</p>
-                `;
-            }
-
-            document.getElementById('required_result').innerHTML = resultHtml;
-        }
-
-        // Function to show the active section and hide others
         function showSection(sectionId) {
-            const sections = ['requiredSection', 'sellSection'];
-            sections.forEach(id => {
-                const section = document.getElementById(id);
-                if (id === sectionId) {
-                    section.classList.remove('hidden');
-                } else {
-                    section.classList.add('hidden');
-                }
+            allSections.forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', id !== sectionId);
             });
-
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.getElementById(`nav${sectionId.replace('Section', '')}`).classList.add('active');
+            // Construct the button ID from sectionId (e.g., 'conversionSection' -> 'navConversion')
+            const navButtonId = `nav${sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('Section', '')}`;
+            document.getElementById(navButtonId).classList.add('active');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const numberInputs = document.querySelectorAll('input[type="number"]');
+        function formatNumber(num) {
+            return new Intl.NumberFormat().format(num);
+        }
 
-            numberInputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.value = '';
-                    this.classList.remove('invalid');
+        // --- CORE CALCULATOR FUNCTIONS ---
+
+        // NEW: Gem Conversion Calculator
+        function calculateConversionCost() {
+            const haveGems = {};
+            gemTiers.forEach(tier => {
+                haveGems[tier] = parseInt(document.getElementById(`conversion_have_${tier}`).value) || 0;
+            });
+            const targetGem = document.getElementById('conversion_target').value;
+            const resultDiv = document.getElementById('conversion_result');
+
+            if (!targetGem) {
+                resultDiv.innerHTML = '<p>กรุณาเลือกหินเป้าหมายที่ต้องการแปลง</p>';
+                return;
+            }
+
+            let totalDenCost = 0;
+            const gemsAtEachLevel = { ...haveGems };
+            const targetIndex = gemTiers.indexOf(targetGem);
+
+            for (let i = 0; i < targetIndex; i++) {
+                const currentTier = gemTiers[i];
+                const nextTier = gemTiers[i+1];
+                const amountToConvert = gemsAtEachLevel[currentTier];
+                
+                if (amountToConvert > 0) {
+                    const costForThisStep = amountToConvert * upgradeCosts[nextTier];
+                    totalDenCost += costForThisStep;
+                    
+                    const gemsProduced = Math.floor(amountToConvert / conversionRate);
+                    gemsAtEachLevel[nextTier] += gemsProduced;
+                }
+            }
+
+            const finalGemCount = gemsAtEachLevel[targetGem];
+            resultDiv.innerHTML = `
+                <p class="result-text">ในการแปลงหินทั้งหมดให้เป็น <strong>${gemNames[targetGem]}</strong></p>
+                <p class="result-text">จะต้องใช้เดนทั้งหมด: <strong>${formatNumber(totalDenCost)} เดน</strong></p>
+                <p class="result-text">และจะได้หินปลายทางประมาณ: <strong>${formatNumber(finalGemCount)} เม็ด</strong></p>
+            `;
+        }
+
+
+        // Original: Sell Gems Calculator
+        function sellGems() {
+            let totalDenEarned = 0;
+            for (const key in sellPrices) {
+                const element = document.getElementById(`sell_${key}`);
+                const qty = parseInt(element ? element.value : 0) || 0;
+                totalDenEarned += qty * sellPrices[key];
+            }
+            document.getElementById('sell_result').innerHTML = `
+                <h3 class="text-lg text-teal-300 font-semibold mb-3">💸 คุณจะได้รับเดนทั้งหมด: <strong>${formatNumber(totalDenEarned)} เดน</strong></h3>
+            `;
+        }
+
+        // Original: Required Gems Calculator
+        function calculateRequiredGems() {
+            const desiredGems = {
+                green: parseInt(document.getElementById('required_green').value) || 0,
+                blue: parseInt(document.getElementById('required_blue').value) || 0,
+                purple: parseInt(document.getElementById('required_purple').value) || 0,
+                red: parseInt(document.getElementById('required_red').value) || 0,
+                gold: parseInt(document.getElementById('required_gold').value) || 0,
+                pink: parseInt(document.getElementById('required_pink').value) || 0,
+            };
+
+            if (Object.values(desiredGems).every(qty => qty === 0)) {
+                document.getElementById('required_result').innerHTML = `<p>กรุณาใส่จำนวนหินที่ต้องการคำนวณ</p>`;
+                return;
+            }
+
+            const totalGemsToProduce = { gray: 0, ...desiredGems };
+            
+            // Iterate backwards from the second to last tier
+            for (let i = gemTiers.length - 1; i > 0; i--) {
+                const currentTier = gemTiers[i]; // e.g., 'pink'
+                const lowerTier = gemTiers[i-1]; // e.g., 'gold'
+                if(totalGemsToProduce[currentTier] > 0) {
+                    totalGemsToProduce[lowerTier] += totalGemsToProduce[currentTier] * conversionRate;
+                }
+            }
+            
+            let resultHtml = `<h3 class="text-lg text-teal-300 font-semibold mb-3">📋 หินที่ต้องใช้และเดนในการอัปเกรด:</h3>`;
+            let hasOutput = false;
+
+            for (let i = 0; i < gemTiers.length - 1; i++) {
+                const lowerTier = gemTiers[i]; // e.g., 'gray'
+                const upperTier = gemTiers[i+1]; // e.g., 'green'
+                
+                const materialsNeeded = totalGemsToProduce[lowerTier] - (desiredGems[lowerTier] || 0);
+                const denCostForUpgrade = totalGemsToProduce[upperTier] * upgradeCosts[upperTier];
+                
+                if (materialsNeeded > 0) {
+                     resultHtml += `<p class="result-text">${gemNames[lowerTier]} (วัตถุดิบ): <strong>${formatNumber(materialsNeeded)}</strong> เม็ด | เดนสำหรับอัปเกรดเป็น ${gemNames[upperTier]}: <strong>${formatNumber(denCostForUpgrade)}</strong></p>`;
+                     hasOutput = true;
+                }
+            }
+            
+            document.getElementById('required_result').innerHTML = hasOutput ? resultHtml : `<p>คุณมีหินตามที่ต้องการครบแล้ว</p>`;
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup input validation and auto-calculation
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', () => {
+                    input.classList.remove('invalid');
+                    // Determine which function to call based on the input's ID
+                    if (input.id.startsWith('conversion_')) calculateConversionCost();
+                    else if (input.id.startsWith('required_')) calculateRequiredGems();
+                    else if (input.id.startsWith('sell_')) sellGems();
                 });
 
                 input.addEventListener('blur', function() {
-                    let value = parseInt(this.value);
-                    if (isNaN(value) || value < 0) {
+                    // This handles when the user leaves the input field
+                    if (isNaN(parseInt(this.value)) || parseInt(this.value) < 0) {
                         this.value = '0';
                         this.classList.add('invalid');
-                    } else {
-                        this.value = value;
-                        this.classList.remove('invalid');
-                    }
-                    if (this.id.startsWith('sell_')) {
-                        sellGems();
-                    } else if (this.id.startsWith('required_')) {
-                        calculateRequiredGems();
+                        // Recalculate after correcting invalid input
+                        if (this.id.startsWith('conversion_')) calculateConversionCost();
+                        else if (this.id.startsWith('required_')) calculateRequiredGems();
+                        else if (this.id.startsWith('sell_')) sellGems();
                     }
                 });
 
-                input.addEventListener('input', function() {
-                    this.classList.remove('invalid');
-                    if (this.id.startsWith('sell_')) {
-                        sellGems();
-                    } else if (this.id.startsWith('required_')) {
-                        calculateRequiredGems();
+                // Add focus event listener to clear value on focus
+                input.addEventListener('focus', function() {
+                    if (parseInt(this.value) === 0) {
+                        this.value = ''; // Clear the input field if it's 0
                     }
                 });
             });
 
-            document.getElementById('clearSellBtn').addEventListener('click', () => {
-                clearInputs(['sell_gray', 'sell_green', 'sell_blue', 'sell_purple', 'sell_red', 'sell_gold', 'sell_pink']); 
-                sellGems();
+            // Setup select change listener
+            document.getElementById('conversion_target').addEventListener('change', calculateConversionCost);
+
+            // Setup navigation buttons
+            document.getElementById('navConversion').addEventListener('click', () => showSection('conversionSection'));
+            document.getElementById('navRequired').addEventListener('click', () => showSection('requiredSection'));
+            document.getElementById('navSell').addEventListener('click', () => showSection('sellSection'));
+
+            // Setup reset/clear buttons
+            document.getElementById('resetConversionBtn').addEventListener('click', () => {
+                const idsToClear = gemTiers.map(t => `conversion_have_${t}`);
+                idsToClear.push('conversion_target');
+                clearInputs(idsToClear);
+                calculateConversionCost();
             });
 
             document.getElementById('resetRequiredBtn').addEventListener('click', () => {
@@ -562,13 +579,16 @@
                 calculateRequiredGems();
             });
 
-            document.getElementById('navRequired').addEventListener('click', () => showSection('requiredSection'));
-            document.getElementById('navSell').addEventListener('click', () => showSection('sellSection'));
-
-            showSection('requiredSection');
+            document.getElementById('clearSellBtn').addEventListener('click', () => {
+                clearInputs(['sell_gray', 'sell_green', 'sell_blue', 'sell_purple', 'sell_red', 'sell_gold', 'sell_pink']);
+                sellGems();
+            });
             
-            sellGems();
+            // Initial state
+            showSection('conversionSection'); // Set the new section as default
+            calculateConversionCost();
             calculateRequiredGems();
+            sellGems();
         });
     </script>
 </body>
