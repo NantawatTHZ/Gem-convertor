@@ -426,7 +426,7 @@
 
         // --- CORE CALCULATOR FUNCTIONS ---
 
-        // NEW: Gem Conversion Calculator
+        // NEW: Gem Conversion Calculator (แก้ไขแล้ว)
         function calculateConversionCost() {
             const haveGems = {};
             gemTiers.forEach(tier => {
@@ -441,28 +441,38 @@
             }
 
             let totalDenCost = 0;
-            const gemsAtEachLevel = { ...haveGems };
+            // สร้างสำเนาของหินที่มีอยู่ เพื่อใช้ในการคำนวณและปรับเปลี่ยนระหว่างการแปลง
+            const currentGems = { ...haveGems };
             const targetIndex = gemTiers.indexOf(targetGem);
 
+            // วนลูปจากระดับหินที่ต่ำที่สุด (gray) ขึ้นไปจนถึงระดับที่ต่ำกว่าหินเป้าหมาย 1 ระดับ
+            // เพื่อจำลองการแปลงหินขึ้นไปทีละขั้น
             for (let i = 0; i < targetIndex; i++) {
-                const currentTier = gemTiers[i];
-                const nextTier = gemTiers[i+1];
-                const amountToConvert = gemsAtEachLevel[currentTier];
-                
-                if (amountToConvert > 0) {
-                    const costForThisStep = amountToConvert * upgradeCosts[nextTier];
-                    totalDenCost += costForThisStep;
+                const currentTier = gemTiers[i]; // หินระดับปัจจุบัน (เช่น 'gray')
+                const nextTier = gemTiers[i + 1]; // หินระดับถัดไป (เช่น 'green')
+
+                // ถ้ามีหินในระดับปัจจุบันอยู่
+                if (currentGems[currentTier] > 0) {
+                    const numberToConvert = currentGems[currentTier]; // จำนวนหินทั้งหมดในระดับปัจจุบัน
+                    const costPerConversionGroup = upgradeCosts[nextTier]; // ต้นทุนเดนในการอัปเกรด 5 เม็ดปัจจุบันเป็น 1 เม็ดถัดไป
+
+                    // คำนวณจำนวนการแปลงแบบเต็มกลุ่ม (5 เม็ด) ที่ทำได้
+                    const fullConversionsPossible = Math.floor(numberToConvert / conversionRate);
                     
-                    const gemsProduced = Math.floor(amountToConvert / conversionRate);
-                    gemsAtEachLevel[nextTier] += gemsProduced;
+                    // เพิ่มต้นทุนเดนที่ใช้ในการแปลงกลุ่มหินนี้
+                    totalDenCost += fullConversionsPossible * costPerConversionGroup;
+
+                    // เพิ่มจำนวนหินที่ถูกแปลงสำเร็จไปยังระดับถัดไป
+                    // หากไม่มีหินในระดับถัดไป ให้ตั้งค่าเป็น 0 ก่อนบวกเพิ่ม
+                    currentGems[nextTier] = (currentGems[nextTier] || 0) + fullConversionsPossible;
                 }
             }
 
-            const finalGemCount = gemsAtEachLevel[targetGem];
+            const finalGemCount = currentGems[targetGem]; // จำนวนหินเป้าหมายที่ได้หลังการแปลง
             resultDiv.innerHTML = `
-                <p class="result-text">ในการแปลงหินทั้งหมดให้เป็น <strong>${gemNames[targetGem]}</strong></p>
+                <p class="result-text">จากหินที่มีอยู่ทั้งหมด หากต้องการแปลงไปเป็น <strong>${gemNames[targetGem]}</strong></p>
                 <p class="result-text">จะต้องใช้เดนทั้งหมด: <strong>${formatNumber(totalDenCost)} เดน</strong></p>
-                <p class="result-text">และจะได้หินปลายทางประมาณ: <strong>${formatNumber(finalGemCount)} เม็ด</strong></p>
+                <p class="result-text">และจะได้หินปลายทาง: <strong>${formatNumber(finalGemCount)} เม็ด</strong></p>
             `;
         }
 
@@ -496,34 +506,55 @@
                 return;
             }
 
+            // เริ่มต้นด้วยหินเป้าหมายที่ต้องการ และ 'gray': 0
             const totalGemsToProduce = { gray: 0, ...desiredGems };
             
-            // Iterate backwards from the second to last tier
+            // วนลูปย้อนกลับจากระดับสูงสุด (pink) ลงมาจนถึงระดับต่ำสุด (green)
             for (let i = gemTiers.length - 1; i > 0; i--) {
-                const currentTier = gemTiers[i]; // e.g., 'pink'
-                const lowerTier = gemTiers[i-1]; // e.g., 'gold'
+                const currentTier = gemTiers[i]; // หินระดับปัจจุบัน (เช่น 'pink')
+                const lowerTier = gemTiers[i-1]; // หินระดับที่ต่ำกว่าหนึ่งขั้น (เช่น 'gold')
+                
                 if(totalGemsToProduce[currentTier] > 0) {
-                    totalGemsToProduce[lowerTier] += totalGemsToProduce[currentTier] * conversionRate;
+                    // คำนวณจำนวนหินระดับล่างที่ต้องใช้เพื่อผลิตหินระดับปัจจุบัน
+                    // โดยปัดเศษขึ้น เพื่อให้แน่ใจว่ามีวัตถุดิบเพียงพอ
+                    const requiredLowerTier = Math.ceil(totalGemsToProduce[currentTier] * conversionRate);
+                    totalGemsToProduce[lowerTier] = (totalGemsToProduce[lowerTier] || 0) + requiredLowerTier; // ตรวจสอบว่ามีค่าเดิมอยู่หรือไม่ก่อนบวก
                 }
             }
             
             let resultHtml = `<h3 class="text-lg text-teal-300 font-semibold mb-3">📋 หินที่ต้องใช้และเดนในการอัปเกรด:</h3>`;
+            let totalDenForUpgrades = 0; // เพิ่มตัวแปรสำหรับรวมเดนทั้งหมด
             let hasOutput = false;
 
+            // วนลูปเพื่อแสดงผลลัพธ์และคำนวณเดนที่ใช้ในการอัปเกรด
             for (let i = 0; i < gemTiers.length - 1; i++) {
-                const lowerTier = gemTiers[i]; // e.g., 'gray'
-                const upperTier = gemTiers[i+1]; // e.g., 'green'
+                const lowerTier = gemTiers[i]; // หินระดับล่าง (เช่น 'gray')
+                const upperTier = gemTiers[i+1]; // หินระดับบน (เช่น 'green')
                 
-                const materialsNeeded = totalGemsToProduce[lowerTier] - (desiredGems[lowerTier] || 0);
-                const denCostForUpgrade = totalGemsToProduce[upperTier] * upgradeCosts[upperTier];
-                
-                if (materialsNeeded > 0) {
-                     resultHtml += `<p class="result-text">${gemNames[lowerTier]} (วัตถุดิบ): <strong>${formatNumber(materialsNeeded)}</strong> เม็ด | เดนสำหรับอัปเกรดเป็น ${gemNames[upperTier]}: <strong>${formatNumber(denCostForUpgrade)}</strong></p>`;
+                // จำนวนหินที่ต้องใช้เป็นวัตถุดิบเพื่อสร้างหินระดับ higherTier ที่ต้องการ
+                // เราต้องหักลบจำนวน desiredGems[lowerTier] ที่เราต้องการโดยตรงออกจาก totalGemsToProduce[lowerTier]
+                // เพราะหินเหล่านั้นไม่ใช่วัตถุดิบสำหรับการอัปเกรด
+                const materialsNeeded = Math.max(0, totalGemsToProduce[lowerTier] - (desiredGems[lowerTier] || 0));
+
+
+                // เดนที่ใช้ในการอัปเกรดหินระดับล่างขึ้นไปเป็นหินระดับบน
+                // ใช้จำนวนหินระดับบนที่คำนวณว่าต้องผลิต (totalGemsToProduce[upperTier]) มาคูณกับต้นทุน
+                const denCostForUpgradeStep = totalGemsToProduce[upperTier] * upgradeCosts[upperTier];
+                totalDenForUpgrades += denCostForUpgradeStep; // รวมเดนทั้งหมด
+
+                if (materialsNeeded > 0 || denCostForUpgradeStep > 0) { // แสดงผลถ้ามีหินที่ต้องใช้หรือมีค่าเดน
+                     resultHtml += `<p class="result-text">${gemNames[lowerTier]} (วัตถุดิบที่ต้องใช้): <strong>${formatNumber(materialsNeeded)}</strong> เม็ด | เดนสำหรับอัปเกรดเป็น ${gemNames[upperTier]}: <strong>${formatNumber(denCostForUpgradeStep)}</strong></p>`;
                      hasOutput = true;
                 }
             }
             
-            document.getElementById('required_result').innerHTML = hasOutput ? resultHtml : `<p>คุณมีหินตามที่ต้องการครบแล้ว</p>`;
+            if (hasOutput) {
+                // เอาบรรทัดนี้ออกตามคำขอ: resultHtml += `<p class="result-text mt-4 font-bold text-lg">รวมเดนที่ต้องใช้ทั้งหมดสำหรับการอัปเกรด: <strong>${formatNumber(totalDenForUpgrades)} เดน</strong></p>`;
+            } else {
+                resultHtml = `<p>คุณมีหินตามที่ต้องการครบแล้ว หรือไม่ได้ระบุหินที่ต้องการ</p>`;
+            }
+
+            document.getElementById('required_result').innerHTML = resultHtml;
         }
 
         // --- EVENT LISTENERS ---
@@ -552,8 +583,16 @@
 
                 // Add focus event listener to clear value on focus
                 input.addEventListener('focus', function() {
+                    // ล้างค่าในช่องเมื่อโฟกัส ถ้าค่าปัจจุบันเป็น 0
                     if (parseInt(this.value) === 0) {
-                        this.value = ''; // Clear the input field if it's 0
+                        this.value = ''; 
+                    }
+                });
+
+                // Add blur event listener to set 0 if empty after focus
+                input.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        this.value = '0';
                     }
                 });
             });
